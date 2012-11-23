@@ -21,7 +21,7 @@ public class NdbBenchmarkImpl extends Benchmark {
     public static void main(String[] args) {
         
         if(args.length != 3){
-            System.out.println("Expected arguments: nThreads metricPeriod v");
+            System.out.println("Expected arguments: nThreads metricPeriod executionTime");
             return;
         }
 

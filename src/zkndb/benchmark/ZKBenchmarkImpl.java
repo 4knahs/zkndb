@@ -1,9 +1,11 @@
 package zkndb.benchmark;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import zkndb.metrics.Metric;
-import zkndb.metrics.ThroughputMetricImpl;
 import zkndb.metrics.ThroughputEngineImpl;
+import zkndb.metrics.ThroughputMetricImpl;
 import zkndb.storage.NdbStorageImpl;
 import zkndb.storage.Storage;
 import zkndb.storage.ZKStorageImpl;
@@ -19,11 +21,18 @@ public class ZKBenchmarkImpl extends Benchmark {
      */
     public static void main(String[] args) {
 
+        if(args.length != 3){
+            System.out.println("Expected arguments: nThreads metricPeriod executionTime");
+            return;
+        }
+        
         _storageThreads = new ArrayList<Thread>();
         _sharedData = new ArrayList<Metric>();
         _storages = new ArrayList<Storage>();
         
-        int nStorageThreads = 3;
+        int nStorageThreads = new Integer(args[0]);
+        long metricPeriod = new Long(args[1]);
+        long executionTime = new Long(args[2]);
         
         //Allocate shared data
         for(int i=0;i<nStorageThreads;i++){
@@ -48,5 +57,20 @@ public class ZKBenchmarkImpl extends Benchmark {
         //Run metrics
         _metricsThread = new Thread(_metrics);
         _metricsThread.start();
+        
+        //Calculate execution time
+        for(;executionTime > 0; executionTime -=  metricPeriod){
+            try {
+                Thread.sleep(metricPeriod);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NdbBenchmarkImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        //Stop threads
+        _metrics.stop();
+        for (Storage storage : _storages) {
+            ((NdbStorageImpl) storage).stop();
+        }
     }
 }
