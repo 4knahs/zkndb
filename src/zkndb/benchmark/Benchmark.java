@@ -8,6 +8,6 @@ import zkndb.storage.StorageInterface;
  * @author 4knahs
  */
 public abstract class Benchmark {
-    protected MetricsInterface _metrics;
-    protected StorageInterface _storage;
+    protected static MetricsInterface _metrics;
+    protected static StorageInterface _storage;
 }

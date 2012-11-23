@@ -1,5 +1,8 @@
 package zkndb.benchmark;
 
+import zkndb.metrics.ThroughputMetricsImpl;
+import zkndb.storage.ZKStorageImpl;
+
 /**
  *
  * @author 4knahs
@@ -11,5 +14,17 @@ public class ZKBenchmark extends Benchmark{
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        
+        _storage = new ZKStorageImpl();
+        _metrics = new ThroughputMetricsImpl();
+        
+        _storage.init();
+        _metrics.init();
+        
+        Thread storeThread = new Thread(_storage);
+        Thread metricsThread = new Thread(_metrics);
+        
+        storeThread.start();
+        metricsThread.start();
     }
 }
