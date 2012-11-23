@@ -3,7 +3,7 @@ package zkndb.benchmark;
 import java.util.ArrayList;
 import zkndb.metrics.Metric;
 import zkndb.metrics.MetricsEngine;
-import zkndb.storage.StorageInterface;
+import zkndb.storage.Storage;
 
 /**
  *
@@ -11,7 +11,7 @@ import zkndb.storage.StorageInterface;
  */
 public abstract class Benchmark {
     protected static MetricsEngine _metrics;
-    protected static ArrayList<StorageInterface> _storages;
+    protected static ArrayList<Storage> _storages;
     protected static ArrayList<Metric> _sharedData; 
     
     protected static ArrayList<Thread> _storageThreads;

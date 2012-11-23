@@ -3,8 +3,7 @@ package zkndb.storage;
 import java.util.List;
 import zkndb.metrics.Metric;
 
-public class NdbStorageImpl extends StorageInterface{
-    List<Metric> _sharedData;
+public class NdbStorageImpl extends Storage{
     
     public NdbStorageImpl(List<Metric> shared){
         _sharedData = shared;
