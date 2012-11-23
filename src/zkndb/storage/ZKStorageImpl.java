@@ -7,8 +7,7 @@ import zkndb.metrics.Metric;
  *
  * @author 4knahs
  */
-public class ZKStorageImpl implements StorageInterface{
-    List<Metric> _sharedData;
+public class ZKStorageImpl extends StorageInterface{
     
     public ZKStorageImpl(List<Metric> shared){
         _sharedData = shared;

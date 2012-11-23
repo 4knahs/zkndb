@@ -7,15 +7,21 @@ import zkndb.metrics.Metric;
  *
  * @author 4knahs
  */
-public interface StorageInterface extends Runnable{
+public abstract class StorageInterface implements Runnable{
+    List<Metric> _sharedData;
+    public Boolean _running = true;
     
     //establishes contact to storage
-    void init();
+    public abstract void init();
     
     //performs a random write to storage
-    void write();
+    public abstract void write();
     
     //performs a read to storage
-    void read();
+    public abstract void read();
+    
+    public void stop(){
+        _running = false;
+    }
     
 }

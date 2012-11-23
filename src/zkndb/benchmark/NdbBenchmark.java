@@ -57,6 +57,7 @@ public class NdbBenchmark extends Benchmark {
         _metricsThread = new Thread(_metrics);
         _metricsThread.start();
         
+        //Calculate execution time
         for(;executionTime > 0; executionTime -=  metricPeriod){
             try {
                 Thread.sleep(metricPeriod);
@@ -65,8 +66,10 @@ public class NdbBenchmark extends Benchmark {
             }
         }
         
+        //Stop threads
         _metrics.stop();
-        //TODO: stop _storages
-        
+        for (StorageInterface storage : _storages) {
+            ((NdbStorageImpl) storage).stop();
+        }
     }
 }
