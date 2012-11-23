@@ -1,6 +1,8 @@
 package zkndb.benchmark;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import zkndb.metrics.Metric;
 import zkndb.metrics.Throughput;
 import zkndb.metrics.ThroughputEngineImpl;
@@ -17,12 +19,19 @@ public class NdbBenchmark extends Benchmark {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        
+        if(args.length != 3){
+            System.out.println("Expected arguments: nThreads metricPeriod v");
+            return;
+        }
 
         _storageThreads = new ArrayList<Thread>();
         _sharedData = new ArrayList<Metric>();
         _storages = new ArrayList<StorageInterface>();
         
-        int nStorageThreads = 3;
+        int nStorageThreads = new Integer(args[0]);
+        long metricPeriod = new Long(args[1]);
+        long executionTime = new Long(args[2]);
         
         //Allocate shared data
         for(int i=0;i<nStorageThreads;i++){
@@ -47,5 +56,17 @@ public class NdbBenchmark extends Benchmark {
         //Run metrics
         _metricsThread = new Thread(_metrics);
         _metricsThread.start();
+        
+        for(;executionTime > 0; executionTime -=  metricPeriod){
+            try {
+                Thread.sleep(metricPeriod);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(NdbBenchmark.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        _metrics.stop();
+        //TODO: stop _storages
+        
     }
 }

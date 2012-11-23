@@ -10,10 +10,15 @@ import java.util.List;
 //Thread that runs from time to time and logs the metrics
 public abstract class MetricsEngine implements Runnable{
     List<Metric> _sharedData;
+    Boolean _running = true;
 
     //initializes logs and metric variables
     public abstract void init(List<Metric> shared);
     
     //logs the current metrics
     public abstract void update();
+    
+    public void stop(){
+        _running = false;
+    }
 }
