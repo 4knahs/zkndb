@@ -1,6 +1,8 @@
 package zkndb.benchmark;
 
-import zkndb.metrics.MetricsInterface;
+import java.util.ArrayList;
+import zkndb.metrics.Metric;
+import zkndb.metrics.MetricsEngine;
 import zkndb.storage.StorageInterface;
 
 /**
@@ -8,6 +10,8 @@ import zkndb.storage.StorageInterface;
  * @author 4knahs
  */
 public abstract class Benchmark {
-    protected static MetricsInterface _metrics;
+    protected static MetricsEngine _metrics;
     protected static StorageInterface _storage;
+    public static ArrayList<Metric> _sharedData;    
+    
 }

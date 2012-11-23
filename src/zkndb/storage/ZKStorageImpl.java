@@ -1,14 +1,17 @@
 package zkndb.storage;
 
+import java.util.List;
+import zkndb.metrics.Metric;
+
 /**
  *
  * @author 4knahs
  */
 public class ZKStorageImpl implements StorageInterface{
-
-    @Override
-    public void init() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    List<Metric> _sharedData;
+    
+    public ZKStorageImpl(List<Metric> shared){
+        _sharedData = shared;
     }
 
     @Override
@@ -24,6 +27,11 @@ public class ZKStorageImpl implements StorageInterface{
     @Override
     public void run() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void init() {
+        
     }
     
 }
