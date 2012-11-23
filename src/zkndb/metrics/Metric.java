@@ -9,5 +9,5 @@ package zkndb.metrics;
  * @author 4knahs
  */
 public interface Metric {
-    
+    public void reset();
 }

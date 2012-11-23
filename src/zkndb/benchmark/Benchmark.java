@@ -11,7 +11,9 @@ import zkndb.storage.StorageInterface;
  */
 public abstract class Benchmark {
     protected static MetricsEngine _metrics;
-    protected static StorageInterface _storage;
-    public static ArrayList<Metric> _sharedData;    
+    protected static ArrayList<StorageInterface> _storages;
+    protected static ArrayList<Metric> _sharedData; 
     
+    protected static ArrayList<Thread> _storageThreads;
+    protected static Thread _metricsThread;
 }

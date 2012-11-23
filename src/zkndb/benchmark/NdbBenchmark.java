@@ -3,30 +3,49 @@ package zkndb.benchmark;
 import java.util.ArrayList;
 import zkndb.metrics.Metric;
 import zkndb.metrics.Throughput;
-import zkndb.metrics.ThroughputMetricsImpl;
+import zkndb.metrics.ThroughputEngineImpl;
 import zkndb.storage.NdbStorageImpl;
+import zkndb.storage.StorageInterface;
 
 /**
  *
  * @author 4knahs
  */
-public class NdbBenchmark extends Benchmark{
-     /**
+public class NdbBenchmark extends Benchmark {
+
+    /**
      * @param args the command line arguments
      */
-    
     public static void main(String[] args) {
-        // TODO code application logic here
-        
+
+        _storageThreads = new ArrayList<Thread>();
         _sharedData = new ArrayList<Metric>();
+        _storages = new ArrayList<StorageInterface>();
         
-        _storage = new NdbStorageImpl(_sharedData);
-        _metrics = new ThroughputMetricsImpl(_sharedData);
+        int nStorageThreads = 3;
         
-        Thread storeThread = new Thread(_storage);
-        Thread metricsThread = new Thread(_metrics);
+        //Allocate shared data
+        for(int i=0;i<nStorageThreads;i++){
+            _sharedData.add(new Throughput());
+        }
         
-        storeThread.start();
-        metricsThread.start();
+        //Create metrics
+        _metrics = new ThroughputEngineImpl(_sharedData);
+        
+        //Create storages
+        for(int i=0;i<nStorageThreads;i++){
+            _storages.add(new NdbStorageImpl(_sharedData));
+        }
+        
+        //Run storages
+        for (StorageInterface storage : _storages) {
+            Thread storeThread = new Thread(((NdbStorageImpl) storage));
+            _storageThreads.add(storeThread);
+            storeThread.start();
+        }
+        
+        //Run metrics
+        _metricsThread = new Thread(_metrics);
+        _metricsThread.start();
     }
 }

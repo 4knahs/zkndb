@@ -10,14 +10,14 @@ package zkndb.metrics;
  */
 public class Throughput implements Metric{
 
-    private int _requests;
-    private int _acks;
+    private long _requests;
+    private long _acks;
 
     public Throughput() {
         reset();
     }
 
-    public int getRequests() {
+    public long getRequests() {
         return _requests;
     }
 
@@ -25,7 +25,7 @@ public class Throughput implements Metric{
         _requests++;
     }
 
-    public int getAcks() {
+    public long getAcks() {
         return _acks;
     }
 
