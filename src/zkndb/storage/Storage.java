@@ -8,10 +8,13 @@ import zkndb.metrics.Metric;
  * @author 4knahs
  */
 public abstract class Storage implements Runnable{
-    List<Metric> _sharedData;
-    public Boolean _running = true;
+    protected List<Metric> _sharedData;
+    protected int _id;
+    protected Boolean _running = true;
+    protected int _requestRate = 100;
     
-    //establishes contact to storage
+    
+    //establishes connection to storage
     public abstract void init();
     
     //performs a random write to storage

@@ -25,10 +25,8 @@ import zkndb.metrics.ThroughputMetricImpl;
 
 public class NdbStorageImpl extends Storage{
     
-    List<Metric> _sharedData;
     private SessionFactory _factory;
     private Session _session;
-    private int _id;
     private int _randomByteSize;
 
     private byte[] _rndAppByte;
@@ -81,7 +79,9 @@ public class NdbStorageImpl extends Storage{
 
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        while(_running){
+            //TODO: insert run logic
+        }
     }
 
     @Override

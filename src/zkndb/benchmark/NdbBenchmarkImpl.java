@@ -39,11 +39,11 @@ public class NdbBenchmarkImpl extends Benchmark {
         }
         
         //Create metrics
-        _metrics = new ThroughputEngineImpl(_sharedData);
+        _metrics = new ThroughputEngineImpl(_sharedData,metricPeriod);
         
         //Create storages
         for(int i=0;i<nStorageThreads;i++){
-            _storages.add(new NdbStorageImpl(_sharedData));
+            _storages.add(new NdbStorageImpl(i,_sharedData));
         }
         
         //Run storages
@@ -56,14 +56,11 @@ public class NdbBenchmarkImpl extends Benchmark {
         //Run metrics
         _metricsThread = new Thread(_metrics);
         _metricsThread.start();
-        
-        //Calculate execution time
-        for(;executionTime > 0; executionTime -=  metricPeriod){
-            try {
-                Thread.sleep(metricPeriod);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(NdbBenchmarkImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        try {
+            //Calculate execution time
+            Thread.sleep(executionTime);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(NdbBenchmarkImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         //Stop threads

@@ -9,8 +9,9 @@ import java.util.List;
 
 //Thread that runs from time to time and logs the metrics
 public abstract class MetricsEngine implements Runnable{
-    List<Metric> _sharedData;
-    Boolean _running = true;
+    protected List<Metric> _sharedData;
+    protected Boolean _running = true;
+    protected long _period = 1000;
 
     //initializes logs and metric variables
     public abstract void init(List<Metric> shared);

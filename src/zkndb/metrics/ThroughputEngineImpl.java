@@ -10,8 +10,9 @@ import java.util.logging.Logger;
  */
 public class ThroughputEngineImpl extends MetricsEngine {
 
-    public ThroughputEngineImpl(List<Metric> shared) {
+    public ThroughputEngineImpl(List<Metric> shared, long period) {
         _sharedData = shared;
+        _period = period;
     }
 
     @Override
@@ -32,13 +33,13 @@ public class ThroughputEngineImpl extends MetricsEngine {
         //Log requests/acks per second and reset
         for (Metric m : _sharedData) {
             synchronized (m) { //each storage thread should lock its own object
-                System.out.println("Throughput = "
-                        + ((ThroughputMetricImpl) m).getRequests() + " Acks = "
-                        + ((ThroughputMetricImpl) m).getAcks());
-                ((ThroughputMetricImpl) m).reset();
+//                System.out.println("Throughput = "
+//                        + ((ThroughputMetricImpl) m).getRequests() + " Acks = "
+//                        + ((ThroughputMetricImpl) m).getAcks());
 
                 totalRequests += ((ThroughputMetricImpl) m).getRequests();
                 totalAcks += ((ThroughputMetricImpl) m).getAcks();
+                ((ThroughputMetricImpl) m).reset();
             }
         }
         System.out.println("TotalRequests = " + totalRequests + " TotalAcks = " + totalAcks);
@@ -48,6 +49,11 @@ public class ThroughputEngineImpl extends MetricsEngine {
     public void run() {
         while(_running){
             update();
+            try {
+                Thread.sleep(_period);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ThroughputEngineImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
