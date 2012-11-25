@@ -1,4 +1,4 @@
-zkndb is a storage benchmarking application.
+zkndb is a simple storage benchmarking application.
 
 It is composed by 3 packages: benchmark, metrics and storage.
 
@@ -8,8 +8,12 @@ benchmark package:
   It is responsible for creating and running the metrics and storage.
   A BenchmarkImpl should receive the following arguments:
     argv[0] : Number of StorageImpl threads to run
-    argv[1] : Period in between metric logging
+    argv[1] : Period in between metric logging (ms)
     argv[2] : Execution time (ms)
+    argv[3] : Time per cycle (ms)
+  Optional arguments:
+    argv[4] : Number of writes per cycle
+    argv[5] : Number of reads per cycle
   
 metrics package:
   Contains Metric and MetricsEngine.
@@ -22,5 +26,7 @@ storage package:
   Contains the database dependent load generators (StorageImpl). 
   They perform the read and writes to the database and update the Metrics.
   
-Synchronization is done at the Metric level, so the benchmark will have a list of Metrics,
-where each metric is only accessed by its Storage thread and from time to time, by the MetricsEngine.
+Synchronization is based on fine-grained locks since it is done at the Metric level. 
+The benchmark has a list of Metrics, there is a separate metric for each Storage thread. 
+MetricsEngine accesses this list within specific periods of time (argv[1]).
+For now the only reason for the synchronization is because the MetricsEngine resets the metrics after logging so they do not overload.
