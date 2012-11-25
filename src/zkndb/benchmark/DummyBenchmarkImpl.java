@@ -4,6 +4,7 @@
  */
 package zkndb.benchmark;
 
+import zkndb.exceptions.InvalidInputException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,55 +23,47 @@ public class DummyBenchmarkImpl extends Benchmark {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        if (args.length != 4) {
-            System.out.println("Expected arguments: nThreads metricPeriod executionTime requestRate");
+    public static void main(String[] args){
+        
+        try {
+            BenchmarkUtils.init(args);
+        } catch (InvalidInputException ex) {
             return;
         }
 
-        _storageThreads = new ArrayList<Thread>();
-        _sharedData = new ArrayList<Metric>();
-        _storages = new ArrayList<Storage>();
-
-        int nStorageThreads = new Integer(args[0]);
-        long metricPeriod = new Long(args[1]);
-        long executionTime = new Long(args[2]);
-        int requestRate = new Integer(args[3]);
-
         //Allocate shared data
-        for (int i = 0; i < nStorageThreads; i++) {
-            _sharedData.add(new ThroughputMetricImpl());
+        for (int i = 0; i < BenchmarkUtils.nStorageThreads; i++) {
+            BenchmarkUtils.sharedData.add(new ThroughputMetricImpl());
         }
 
         //Create metrics
-        _metrics = new ThroughputEngineImpl(_sharedData, metricPeriod);
+        BenchmarkUtils.setMetricsEngine(new ThroughputEngineImpl());
 
         //Create storages
-        for (int i = 0; i < nStorageThreads; i++) {
-            _storages.add(new DummyStorageImpl(i,requestRate, _sharedData));
+        for (int i = 0; i < BenchmarkUtils.nStorageThreads; i++) {
+            BenchmarkUtils.storages.add(new DummyStorageImpl(i));
         }
 
         //Run storages
-        for (Storage storage : _storages) {
+        for (Storage storage : BenchmarkUtils.storages) {
             Thread storeThread = new Thread(((DummyStorageImpl) storage));
-            _storageThreads.add(storeThread);
+            BenchmarkUtils.storageThreads.add(storeThread);
             storeThread.start();
         }
 
         //Run metrics
-        _metricsThread = new Thread(_metrics);
-        _metricsThread.start();
-        
+        BenchmarkUtils.startMetrics();
+
         try {
             //Calculate execution time
-            Thread.sleep(executionTime);
+            Thread.sleep(BenchmarkUtils.executionTime);
         } catch (InterruptedException ex) {
             Logger.getLogger(DummyBenchmarkImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         //Stop threads
-        _metrics.stop();
-        for (Storage storage : _storages) {
+        BenchmarkUtils.metrics.stop();
+        for (Storage storage : BenchmarkUtils.storages) {
             ((DummyStorageImpl) storage).stop();
         }
     }

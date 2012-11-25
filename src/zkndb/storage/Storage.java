@@ -1,6 +1,9 @@
 package zkndb.storage;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import zkndb.benchmark.BenchmarkUtils;
 import zkndb.metrics.Metric;
 
 /**
@@ -27,4 +30,20 @@ public abstract class Storage implements Runnable{
         _running = false;
     }
     
+    @Override
+    public void run() {
+        while (_running) {
+            for(int i=0; i < BenchmarkUtils.nWrites; i++){
+                write();
+            }
+            for(int i=0; i < BenchmarkUtils.nReads; i++){
+                read();
+            }
+            try {
+                Thread.sleep(_requestRate);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(DummyStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
 }

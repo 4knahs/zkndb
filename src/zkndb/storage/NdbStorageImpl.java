@@ -14,13 +14,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import zkndb.metrics.Metric;
+import zkndb.benchmark.BenchmarkUtils;
 import zkndb.metrics.ThroughputMetricImpl;
 
 public class NdbStorageImpl extends Storage{
@@ -32,8 +31,8 @@ public class NdbStorageImpl extends Storage{
     private byte[] _rndAppByte;
     private long _appIds;
     
-    public NdbStorageImpl(int id, List<Metric> shared){
-        _sharedData = shared;
+    public NdbStorageImpl(int id){
+        _sharedData = BenchmarkUtils.sharedData;
         _id = id;
         _randomByteSize = 1024;
         
@@ -75,13 +74,6 @@ public class NdbStorageImpl extends Storage{
     @Override
     public void read() {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void run() {
-        while(_running){
-            //TODO: insert run logic
-        }
     }
 
     @Override

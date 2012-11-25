@@ -4,9 +4,7 @@
  */
 package zkndb.storage;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import zkndb.benchmark.BenchmarkUtils;
 import zkndb.metrics.Metric;
 import zkndb.metrics.ThroughputMetricImpl;
 
@@ -16,10 +14,10 @@ import zkndb.metrics.ThroughputMetricImpl;
  */
 public class DummyStorageImpl extends Storage {
 
-    public DummyStorageImpl(int id, int requestRate, List<Metric> shared) {
+    public DummyStorageImpl(int id) {
         _id = id;
-        _sharedData = shared;
-        _requestRate = requestRate;
+        _sharedData = BenchmarkUtils.sharedData;
+        _requestRate = BenchmarkUtils.requestRate;
     }
 
     @Override
@@ -61,16 +59,5 @@ public class DummyStorageImpl extends Storage {
             }
         }
     }
-
-    @Override
-    public void run() {
-        while (_running) {
-            write();
-            try {
-                Thread.sleep(_requestRate);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(DummyStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
+    
 }

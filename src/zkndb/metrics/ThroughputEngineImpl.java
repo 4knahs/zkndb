@@ -3,6 +3,7 @@ package zkndb.metrics;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import zkndb.benchmark.BenchmarkUtils;
 
 /**
  *
@@ -10,9 +11,9 @@ import java.util.logging.Logger;
  */
 public class ThroughputEngineImpl extends MetricsEngine {
 
-    public ThroughputEngineImpl(List<Metric> shared, long period) {
-        _sharedData = shared;
-        _period = period;
+    public ThroughputEngineImpl() {
+        _sharedData = BenchmarkUtils.sharedData;
+        _period = BenchmarkUtils.metricPeriod;
     }
 
     @Override

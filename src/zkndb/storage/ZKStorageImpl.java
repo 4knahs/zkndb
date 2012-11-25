@@ -1,6 +1,7 @@
 package zkndb.storage;
 
 import java.util.List;
+import zkndb.benchmark.BenchmarkUtils;
 import zkndb.metrics.Metric;
 
 /**
@@ -9,8 +10,9 @@ import zkndb.metrics.Metric;
  */
 public class ZKStorageImpl extends Storage{
     
-    public ZKStorageImpl(List<Metric> shared){
-        _sharedData = shared;
+    public ZKStorageImpl(int id){
+        _sharedData = BenchmarkUtils.sharedData;
+        _id = id;
     }
 
     @Override
