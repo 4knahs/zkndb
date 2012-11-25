@@ -1,3 +1,4 @@
+<p>
 zkndb is a simple storage benchmarking application.
 
 It is composed by 3 packages: benchmark, metrics and storage.
@@ -30,3 +31,4 @@ Synchronization is based on fine-grained locks since it is done at the Metric le
 The benchmark has a list of Metrics, there is a separate metric for each Storage thread. 
 MetricsEngine accesses this list within specific periods of time (argv[1]).
 For now the only reason for the synchronization is because the MetricsEngine resets the metrics after logging so they do not overload.
+</p>
