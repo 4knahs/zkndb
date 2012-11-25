@@ -57,7 +57,7 @@ public abstract class BenchmarkUtils {
                 nWrites = new Integer(args[4]);
                 nReads = new Integer(args[5]);
             } else {
-                System.out.println("Expected arguments: nThreads metricPeriod executionTime requestRate");
+                System.out.println("Expected arguments: nThreads metricPeriod executionTime requestRate nWrites nReads");
                 return;
             }
         }
