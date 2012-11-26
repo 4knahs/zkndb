@@ -9,11 +9,6 @@ import zkndb.metrics.Metric;
  * @author 4knahs
  */
 public class ZKStorageImpl extends Storage{
-    
-    public ZKStorageImpl(int id){
-        _sharedData = BenchmarkUtils.sharedData;
-        _id = id;
-    }
 
     @Override
     public void write() {
@@ -32,7 +27,7 @@ public class ZKStorageImpl extends Storage{
 
     @Override
     public void init() {
-        
+        _sharedData = BenchmarkUtils.sharedData;
     }
     
 }

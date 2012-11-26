@@ -11,14 +11,12 @@ import zkndb.benchmark.BenchmarkUtils;
  */
 public class ThroughputEngineImpl extends MetricsEngine {
 
-    public ThroughputEngineImpl() {
+    @Override
+    public void init() {
+
         _sharedData = BenchmarkUtils.sharedData;
         _period = BenchmarkUtils.metricPeriod;
-    }
-
-    @Override
-    public void init(List<Metric> shared) {
-
+        
         for (Metric m : _sharedData) {
             synchronized (m) { //each storage thread should lock its own object
                 ((ThroughputMetricImpl) m).reset();
@@ -43,6 +41,7 @@ public class ThroughputEngineImpl extends MetricsEngine {
                 ((ThroughputMetricImpl) m).reset();
             }
         }
+        printTime();
         System.out.println("TotalRequests = " + totalRequests + " TotalAcks = " + totalAcks);
     }
 

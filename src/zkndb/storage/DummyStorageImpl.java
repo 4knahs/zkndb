@@ -14,14 +14,12 @@ import zkndb.metrics.ThroughputMetricImpl;
  */
 public class DummyStorageImpl extends Storage {
 
-    public DummyStorageImpl(int id) {
-        _id = id;
-        _sharedData = BenchmarkUtils.sharedData;
-        _requestRate = BenchmarkUtils.requestRate;
-    }
+    public DummyStorageImpl() {}
 
     @Override
     public void init() {
+        _sharedData = BenchmarkUtils.sharedData;
+        _requestRate = BenchmarkUtils.requestRate;
         //TODO : establishes connection to storage
         System.out.println("Storage " + _id + " establishing connection");
     }

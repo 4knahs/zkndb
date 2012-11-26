@@ -37,18 +37,6 @@ public class NdbStorageImpl extends Storage{
     private byte[] _rndAppByte;
     private long _appId;
     
-    public NdbStorageImpl(int id){
-        _sharedData = BenchmarkUtils.sharedData;
-        _id = id;
-        _randomByteSize = 53;
-        
-        //calculate randomByte once only to minimize the calculationoverhead
-        _rndAppByte = new byte[_randomByteSize];
-        
-        Random rnd = new Random(System.currentTimeMillis());
-        rnd.nextBytes(_rndAppByte);  
-    }
-    
     @Override
     public void write() {
         ThroughputMetricImpl throughputMetric = null;
@@ -100,6 +88,16 @@ public class NdbStorageImpl extends Storage{
 
     @Override
     public void init() {
+        
+        _sharedData = BenchmarkUtils.sharedData;
+        _randomByteSize = 53;
+        
+        //calculate randomByte once only to minimize the calculationoverhead
+        _rndAppByte = new byte[_randomByteSize];
+        
+        Random rnd = new Random(System.currentTimeMillis());
+        rnd.nextBytes(_rndAppByte); 
+        
         //use default clusterj.properties included in this project
         File propsFile = new File("src/zkndb/storage/zkndb-clusterj.properties"); 
         InputStream inStream;

@@ -12,8 +12,8 @@ public class ThroughputMetricImpl implements Metric{
 
     private long _requests;
     private long _acks;
-
-    public ThroughputMetricImpl() {
+    
+    public void init(){
         reset();
     }
 

@@ -22,27 +22,97 @@ public abstract class BenchmarkUtils {
     public static int requestRate = 100;
     public static int nWrites = 1;
     public static int nReads = 1;
-    
     public static ArrayList<Metric> sharedData = new ArrayList<Metric>();
-    
-    protected static MetricsEngine metrics;
-    protected static ArrayList<Storage> storages = new ArrayList<Storage>(); 
-    
+    protected static ArrayList<Storage> storages = new ArrayList<Storage>();
     protected static ArrayList<Thread> storageThreads = new ArrayList<Thread>();
+    protected static Class<?> storageClass = null;
+    protected static Class<?> metricClass = null;
+    protected static Class<?> engineClass = null;
     protected static Thread metricsThread;
 
-    public static void setMetricsEngine(MetricsEngine engine){
-        metrics = engine;
+    public static void setStorage(String storage) {
+        storageClass = null;
+        try {
+            storageClass = Class.forName("zkndb.storage." + storage);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Storage : Class not found!");
+            System.exit(1);
+        }
     }
-    
-    public static void startMetrics(){
-        metricsThread = new Thread(BenchmarkUtils.metrics);
-        BenchmarkUtils.metricsThread.start();
+
+    public static void setMetric(String metric) {
+        metricClass = null;
+        try {
+            metricClass = Class.forName("zkndb.metrics." + metric);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Metric : Class not found!");
+            System.exit(1);
+        }
     }
-    
-    
-    
-    public static void init(String[] args) throws InvalidInputException{
+
+    public static void setEngine(String engine) {
+        engineClass = null;
+        try {
+            engineClass = Class.forName("zkndb.metrics." + engine);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Engine : Class not found!");
+            System.exit(1);
+        }
+    }
+
+    public static void run() {
+        try {
+            MetricsEngine engine = (MetricsEngine) engineClass.newInstance();
+            engine.init();
+
+            //Allocate shared data
+            for (int i = 0; i < nStorageThreads; i++) {
+                Metric metric = (Metric) metricClass.newInstance();
+                metric.init();
+                sharedData.add(metric);
+            }
+
+            //Create storages
+            for (int i = 0; i < nStorageThreads; i++) {
+                Storage stor = (Storage) storageClass.newInstance();
+                stor.init();
+                storages.add(stor);
+            }
+
+            //Run storages
+            for (Storage storage : storages) {
+                Thread storeThread = new Thread(storage);
+                storageThreads.add(storeThread);
+                storeThread.start();
+            }
+
+            //Run metrics
+            metricsThread = new Thread(engine);
+            metricsThread.start();
+
+            try {
+                //Calculate execution time
+                Thread.sleep(executionTime);
+            } catch (InterruptedException ex) {
+                System.err.println("Could not sleep!");
+            }
+
+            //Stop threads
+            engine.stop();
+            for (Storage storage : BenchmarkUtils.storages) {
+                storage.stop();
+            }
+            
+        } catch (IllegalAccessException e) {
+            System.err.println("Class not accessible!");
+            System.exit(1);
+        } catch (InstantiationException e) {
+            System.err.println("Class not instantiable!");
+            System.exit(1);
+        }
+    }
+
+    public static void readInput(String[] args) {
         if (args.length == 4) {
             nStorageThreads = new Integer(args[0]);
             metricPeriod = new Long(args[1]);
@@ -57,17 +127,17 @@ public abstract class BenchmarkUtils {
                 nWrites = new Integer(args[4]);
                 nReads = new Integer(args[5]);
             } else {
-                System.out.println("Expected arguments: nThreads metricPeriod executionTime requestRate nWrites nReads");
-                return;
+                System.err.println("Expected arguments: nThreads metricPeriod executionTime requestRate nWrites nReads");
+                System.exit(1);
             }
         }
-        
-        System.out.println("Running:\n Number of storage threads = " + nStorageThreads +
-                        "\n Logging period = " + metricPeriod +
-                        "\n Total execution time (ms) = " + executionTime +
-                        "\n Cycle time (ms) = " + requestRate +
-                        "\n Sequential writes per cycle = " + nWrites +
-                        "\n Sequential reads per cycle = " + nReads);
+
+        System.out.println("Running:\n Number of storage threads = " + nStorageThreads
+                + "\n Logging period = " + metricPeriod
+                + "\n Total execution time (ms) = " + executionTime
+                + "\n Cycle time (ms) = " + requestRate
+                + "\n Sequential writes per cycle = " + nWrites
+                + "\n Sequential reads per cycle = " + nReads
+                + "\n\n Output:");
     }
-    
 }

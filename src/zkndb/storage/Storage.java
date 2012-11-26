@@ -26,6 +26,10 @@ public abstract class Storage implements Runnable{
     //performs a read to storage
     public abstract void read();
     
+    public void setId(int id){
+        _id = id;
+    }
+    
     public void stop(){
         _running = false;
     }
@@ -42,7 +46,7 @@ public abstract class Storage implements Runnable{
             try {
                 Thread.sleep(_requestRate);
             } catch (InterruptedException ex) {
-                Logger.getLogger(DummyStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Storage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
