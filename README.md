@@ -43,8 +43,11 @@ Possible future work:
 Current issues:
   MetricsEngine does not perform a lock on the whole list of metrics. This means that it has to acquire
   a lock for each of its elements separately. This introduces a delay in between the metrics periods
-  and might potentially misplace them relative to each others. A solution would be to acquire the lock on
-  the whole set, but this probably means it has to wait longer to acquire it. Maybe, if we would allow
-  the relax the metric period constraint, we could do best-effort to match it and then log the real start and
-  end of this periods so we could normalize their outcomes.
+  and might potentially misplace them relative to each others. This delay might correspond
+  to the time it takes to perform a single read or write and so it is dependent on the size of the data being
+  R/W.
+  A solution would be to acquire the lock on the whole set, but this probably means it has to wait longer 
+  to acquire it. Maybe, if we would allow to relax the metric period constraint, we could do best-effort
+  to match it and then log the real start and end of this periods so we could normalize their outcomes
+  after execution.
 </pre>
