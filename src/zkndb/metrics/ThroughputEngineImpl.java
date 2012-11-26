@@ -19,7 +19,7 @@ public class ThroughputEngineImpl extends MetricsEngine {
         
         for (Metric m : _sharedData) {
             synchronized (m) { //each storage thread should lock its own object
-                ((ThroughputMetricImpl) m).reset();
+                m.reset();
             }
         }
     }
@@ -38,10 +38,10 @@ public class ThroughputEngineImpl extends MetricsEngine {
 
                 totalRequests += ((ThroughputMetricImpl) m).getRequests();
                 totalAcks += ((ThroughputMetricImpl) m).getAcks();
-                ((ThroughputMetricImpl) m).reset();
+                m.reset();
             }
         }
-        printTime();
+        //printTime();
         System.out.println("TotalRequests = " + totalRequests + " TotalAcks = " + totalAcks);
     }
 
@@ -50,7 +50,7 @@ public class ThroughputEngineImpl extends MetricsEngine {
         while(_running){
             update();
             try {
-                Thread.sleep(_period);
+                Thread.sleep(BenchmarkUtils.metricPeriod);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ThroughputEngineImpl.class.getName()).log(Level.SEVERE, null, ex);
             }

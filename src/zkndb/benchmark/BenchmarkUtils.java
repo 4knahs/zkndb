@@ -4,7 +4,6 @@
  */
 package zkndb.benchmark;
 
-import zkndb.exceptions.InvalidInputException;
 import java.util.ArrayList;
 import zkndb.metrics.Metric;
 import zkndb.metrics.MetricsEngine;
@@ -99,7 +98,7 @@ public abstract class BenchmarkUtils {
 
             //Stop threads
             engine.stop();
-            for (Storage storage : BenchmarkUtils.storages) {
+            for (Storage storage : storages) {
                 storage.stop();
             }
             

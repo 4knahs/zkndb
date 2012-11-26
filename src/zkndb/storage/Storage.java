@@ -44,7 +44,7 @@ public abstract class Storage implements Runnable{
                 read();
             }
             try {
-                Thread.sleep(_requestRate);
+                Thread.sleep(BenchmarkUtils.requestRate);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Storage.class.getName()).log(Level.SEVERE, null, ex);
             }

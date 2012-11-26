@@ -14,6 +14,10 @@ public abstract class MetricsEngine implements Runnable{
     protected List<Metric> _sharedData;
     protected Boolean _running = true;
     protected long _period = 1000;
+    protected SimpleDateFormat ftcomplete = 
+       new SimpleDateFormat ("yyyy.MM.dd 'at' hh:mm:ss a");
+    protected SimpleDateFormat ft = 
+       new SimpleDateFormat ("hh:mm:ss ");
 
     //initializes logs and metric variables
     public abstract void init();
@@ -27,15 +31,11 @@ public abstract class MetricsEngine implements Runnable{
     
     public void printCompleteTime(){
         Date dnow = new Date();
-        SimpleDateFormat ft = 
-       new SimpleDateFormat ("yyyy.MM.dd 'at' hh:mm:ss a");
-        System.out.print(ft.format(dnow));
+        System.out.print(ftcomplete.format(dnow));
     }
     
     public void printTime(){
         Date dnow = new Date();
-        SimpleDateFormat ft = 
-       new SimpleDateFormat ("hh:mm:ss ");
         System.out.print(ft.format(dnow));
     }
 }
