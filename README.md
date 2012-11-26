@@ -1,8 +1,9 @@
-<pre>
+<h3>
 zkndb is a simple storage benchmarking application.
 
 It is composed by 3 packages: benchmark, metrics and storage.
-
+</h3>
+<pre>
 benchmark package: 
   Contains Benchmark.
   This package contains the different benchmark applications (BenchmarkImpl). 
