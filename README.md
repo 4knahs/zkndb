@@ -1,8 +1,9 @@
-<pre>
+<h3>ZKNDB framework</h3>
 zkndb is a simple storage benchmarking application.
-
 It is composed by 3 packages: benchmark, metrics and storage.
 
+<h3>Packages</h3>
+<pre>
 benchmark package: 
   Contains Benchmark.
   This package contains the different benchmark applications (BenchmarkImpl). 
@@ -27,20 +28,27 @@ storage package:
   Contains Storage.
   Contains the database dependent load generators (StorageImpl). 
   They perform the read and writes to the database and update the Metrics.
+</pre>
   
+<h3>Synchronization</h3>  
+<pre>
 Synchronization is based on fine-grained locks since it is done at the Metric level. 
   The benchmark has a list of Metrics, there is a separate metric for each Storage thread. 
   MetricsEngine accesses this list within specific periods of time (argv[1]).
   For now the only reason for the synchronization is because the MetricsEngine resets the metrics after
   logging so they do not overload.
+</pre>
 
-Possible future work:
+<h3>Possible future work</h3>
+<pre>
   In order to implement this without intermediate locking, instead of the MetricsEngine,
   the StorageImpl should periodically store the metrics themselves.
   This way the MetricEngine would only need to aggregate the results in the end of the execution.
   The threads could be reasonaby synchronized in terms of time periods.
+</pre>
 
-Current issues:
+<h3>Current issues</h3>
+<pre>
   MetricsEngine does not perform a lock on the whole list of metrics. This means that it has to acquire
   a lock for each of its elements separately. This introduces a delay in between the metrics periods
   and might potentially misplace them relative to each others. This delay might correspond
