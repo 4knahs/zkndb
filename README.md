@@ -23,7 +23,7 @@ metrics package:
   MetricsEngine determines when and where to log the metrics.
   
 storage package:
-  Containt Storage.
+  Contains Storage.
   Contains the database dependent load generators (StorageImpl). 
   They perform the read and writes to the database and update the Metrics.
   
