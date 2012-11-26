@@ -98,18 +98,17 @@ public class NdbStorageImpl extends Storage{
         Random rnd = new Random(System.currentTimeMillis());
         rnd.nextBytes(_rndAppByte); 
         
-        //use default clusterj.properties included in this project
-        File propsFile = new File("src/zkndb/storage/zkndb-clusterj.properties"); 
-        InputStream inStream;
+        //use default clusterj.properties included in the jar file
+        InputStream inStream = ClassLoader.getSystemResourceAsStream(
+                "zkndb/storage/zkndb-clusterj.properties");
         
         try {
-            inStream = new FileInputStream(propsFile);
             Properties props = new Properties();
             props.load(inStream);
             //create a session (connection to the database)
             _factory = ClusterJHelper.getSessionFactory(props);
             _session = _factory.getSession();
-            _session.deletePersistentAll(NdbApplicationStateCJ.class);
+            //_session.deletePersistentAll(NdbApplicationStateCJ.class);
         } catch (FileNotFoundException ex){
             Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE, 
                     null, ex);
