@@ -1,5 +1,10 @@
 package zkndb.storage;
 
+/**
+ *
+ * @author arinto
+ */
+
 import com.mysql.clusterj.ClusterJHelper;
 import com.mysql.clusterj.Query;
 import com.mysql.clusterj.Session;
@@ -21,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import zkndb.benchmark.BenchmarkUtils;
 import zkndb.metrics.ThroughputMetricImpl;
+import zkndb.exceptions.InvalidDbEntryException;
 
 public class NdbStorageImpl extends Storage{
     
@@ -29,14 +35,14 @@ public class NdbStorageImpl extends Storage{
     private int _randomByteSize;
 
     private byte[] _rndAppByte;
-    private long _appIds;
+    private long _appId;
     
     public NdbStorageImpl(int id){
         _sharedData = BenchmarkUtils.sharedData;
         _id = id;
-        _randomByteSize = 1024;
+        _randomByteSize = 53;
         
-        //calculate randomByte only only to minimize the overhead
+        //calculate randomByte once only to minimize the calculationoverhead
         _rndAppByte = new byte[_randomByteSize];
         
         Random rnd = new Random(System.currentTimeMillis());
@@ -45,41 +51,57 @@ public class NdbStorageImpl extends Storage{
     
     @Override
     public void write() {
-        try
-        {
-            ThroughputMetricImpl throughput = (ThroughputMetricImpl) _sharedData.get(_id);
-            synchronized(throughput)
-            {
-                throughput.incrementRequests();
+        ThroughputMetricImpl throughputMetric = null;
+
+        throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
+        synchronized (throughputMetric) {
+            try {
+
+                throughputMetric.incrementRequests();
+                storeApplicationState();
+                throughputMetric.incrementAcks();
+            } catch (Exception ex) {
+                //assumptions: 
+                //1. no exception is thrown during incrementing requests and acks
+                //2. persists throws exception
+                System.out.println("Exception in when trying to store application state");
+                Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE,
+                        null, ex);
             }
-            
-            storeApplicationState();
-            
-            synchronized(throughput)
-            {
-                throughput.incrementAcks();
-            }
-        } 
-        catch (Exception ex)
-        {
-            //assumptions: 
-            //1. no exception is thrown during incrementing requests and acks
-            //2. persists throws exception
-            System.out.println("Exception in storeApplicationState");
-            Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE, 
-               null, ex);
         }
     }
 
     @Override
     public void read() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ThroughputMetricImpl throughputMetric = null;
+        throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
+        synchronized (throughputMetric) {
+            try {
+                throughputMetric.incrementRequests();
+                readApplicationState();
+                throughputMetric.incrementAcks();
+
+            } catch (InvalidDbEntryException ex) {
+                //theoretically this case will never happen
+                //because we already ensure that new _appIds is stored when 
+                //we sucessfully persist the data
+                //therefore, to handle this case we treat this as succesfully increment
+                throughputMetric.incrementAcks();
+            } catch (Exception ex) {
+                //assumptions: 
+                //1. no exception is thrown during incrementing requests and acks
+                //2. persists throws exception
+                System.out.println("Exception in when trying to read application state");
+                Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE,
+                        null, ex);
+            }
+        }
     }
 
     @Override
     public void init() {
-                //use default clusterj.properties included in this project
-        File propsFile = new File("clusterj.properties"); 
+        //use default clusterj.properties included in this project
+        File propsFile = new File("src/zkndb/storage/zkndb-clusterj.properties"); 
         InputStream inStream;
         
         try {
@@ -89,6 +111,7 @@ public class NdbStorageImpl extends Storage{
             //create a session (connection to the database)
             _factory = ClusterJHelper.getSessionFactory(props);
             _session = _factory.getSession();
+            _session.deletePersistentAll(NdbApplicationStateCJ.class);
         } catch (FileNotFoundException ex){
             Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE, 
                     null, ex);
@@ -98,29 +121,33 @@ public class NdbStorageImpl extends Storage{
         }
     }
     
-        private void storeApplicationState()
+    private void storeApplicationState()
     {
         NdbApplicationStateCJ storedApp = 
                 _session.newInstance(NdbApplicationStateCJ.class);
         
         //to simplify the ID generation, random UUID is used
-        _appIds = UUID.randomUUID().getLeastSignificantBits();
-        storedApp.setId(_appIds);
+        long appId = UUID.randomUUID().getLeastSignificantBits();
+        //Random rnd = new Random(System.currentTimeMillis());
+        //int appIds = rnd.nextInt() + this._id;
+        storedApp.setId(appId);
         storedApp.setAppState(_rndAppByte);
         
         _session.persist(storedApp);
+        
+        _appId = appId;
     }
     
-    private void readApplicationState()
+    private void readApplicationState() throws InvalidDbEntryException
     {
-        QueryDomainType<NdbApplicationStateCJ> domainApp;
-        Query<NdbApplicationStateCJ> queryApp;
+        NdbApplicationStateCJ appState = 
+                _session.find(NdbApplicationStateCJ.class, _appId);
         
-        QueryBuilder builder = _session.getQueryBuilder();
-        domainApp = builder.createQueryDefinition(NdbApplicationStateCJ.class);
-        queryApp = _session.createQuery(domainApp);
-        //resultsApp = queryApp.getResultList();
-        
+        if(appState == null)
+        {
+            throw new InvalidDbEntryException(
+                    _appId + " does not exist in ndb databases" );
+        }
     }
     
     @PersistenceCapable(table = "applicationstate")

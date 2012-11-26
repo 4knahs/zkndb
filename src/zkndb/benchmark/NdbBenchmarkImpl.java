@@ -40,6 +40,7 @@ public class NdbBenchmarkImpl extends Benchmark {
 
         //Run storages
         for (Storage storage : BenchmarkUtils.storages) {
+            storage.init();
             Thread storeThread = new Thread(((NdbStorageImpl) storage));
             BenchmarkUtils.storageThreads.add(storeThread);
             storeThread.start();
