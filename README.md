@@ -31,6 +31,7 @@ storage package:
 </pre>
 
 <h3>Application Example</h3>
+In the following example one can implement both the metrics and storage system independently.
 <pre>
 /*Main of DummyBenchmarkImpl.java*/
 public static void main(String[] args){
