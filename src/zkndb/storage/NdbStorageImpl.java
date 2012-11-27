@@ -90,6 +90,7 @@ public class NdbStorageImpl extends Storage{
     public void init() {
         
         _sharedData = BenchmarkUtils.sharedData;
+        //53 is obtained from observation in YARN's ZKStateStore class
         _randomByteSize = 53;
         
         //calculate randomByte once only to minimize the calculationoverhead
@@ -132,6 +133,7 @@ public class NdbStorageImpl extends Storage{
         
         _session.persist(storedApp);
         
+        //when persist sucsses, _appId is updated, for reading purpose
         _appId = appId;
     }
     

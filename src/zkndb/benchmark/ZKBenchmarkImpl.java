@@ -25,7 +25,7 @@ public class ZKBenchmarkImpl extends Benchmark {
     
         BenchmarkUtils.setEngine("ThroughputEngineImpl");
 
-        BenchmarkUtils.setStorage("ZkStorageImpl");
+        BenchmarkUtils.setStorage("ZKStorageImpl");
         
         BenchmarkUtils.run();
     }
