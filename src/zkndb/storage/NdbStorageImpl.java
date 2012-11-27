@@ -99,7 +99,7 @@ public class NdbStorageImpl extends Storage{
         rnd.nextBytes(_rndAppByte); 
         
         //use default clusterj.properties included in this project
-        File propsFile = new File("src/zkndb/storage/zkndb-clusterj.properties"); 
+        File propsFile = new File("zkndb-clusterj.properties"); 
         InputStream inStream;
         
         try {
