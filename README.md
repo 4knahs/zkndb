@@ -29,6 +29,28 @@ storage package:
   Contains the database dependent load generators (StorageImpl). 
   They perform the read and writes to the database and update the Metrics.
 </pre>
+
+<h3>Application Example</h3>
+<pre>
+/*Main of DummyBenchmarkImpl.java*/
+public static void main(String[] args){
+        
+        /*Reads the inputs*/
+        BenchmarkUtils.readInput(args);
+
+        /*Sets the wanted metrics*/
+        BenchmarkUtils.setMetric("ThroughputMetricImpl");
+    
+        /*Engine that aggregates the results in periods of argv[1] (ms)*/    
+        BenchmarkUtils.setEngine("ThroughputEngineImpl");
+
+        /*Database specific implementation*/
+        BenchmarkUtils.setStorage("DummyStorageImpl");
+        
+        /*Runs the StorageImplementation in as many threads as specified in arg[0]*/
+        BenchmarkUtils.run();
+    }
+</pre>
   
 <h3>Synchronization</h3>  
 <pre>
@@ -54,8 +76,4 @@ Synchronization is based on fine-grained locks since it is done at the Metric le
   and might potentially misplace them relative to each others. This delay might correspond
   to the time it takes to perform a single read or write and so it is dependent on the size of the data being
   R/W.
-  A solution would be to acquire the lock on the whole set, but this probably means it has to wait longer 
-  to acquire it. Maybe, if we would allow to relax the metric period constraint, we could do best-effort
-  to match it and then log the real start and end of this periods so we could normalize their outcomes
-  after execution.
 </pre>
