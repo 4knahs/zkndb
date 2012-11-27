@@ -1,7 +1,9 @@
 package zkndb.storage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -27,15 +29,32 @@ import zkndb.utils.ZKUtil;
  */
 public class ZKStorageImpl extends Storage{
     
-    //TODO: move these configurations to properties file
-    private String _zkNodeWorkingPath = "";
-    private String _zkHostPort = "localhost:2184";
-    private int _zkSessionTimeout = 60000;
-    private String _zkAclconf = "world:anyone:rwcda";
-    //end todo
+    //properties-file keys
+    protected static final String ZK_HOST_PORT = "zkstorageimpl.zkhostport";
+    protected static final String ZK_HOST_PORT_DEFAULT = "localhost:2184";
     
-    private static final String ROOT_ZNODE_NAME = "ZKRMStateRoot";
-    private static final int NUM_RETRIES = 3;
+    protected static final String ZK_NODE_WORKING_PATH = "zkstorageimpl.zknodeworkingpath";
+    protected static final String ZK_NODE_WORKING_PATH_DEFAULT = "";
+    
+    protected static final String ZK_SESSION_TIMEOUT ="zkstorageimpl.sessiontimeout";
+    protected static final String ZK_SESSION_TIMEOUT_DEFAULT = "60000";
+    
+    protected static final String ZK_ACL_CONF = "zkstorageimpl.zkaclconf";
+    protected static final String ZK_ACL_CONF_DEFAULT = "world:anyone:rwcda";
+    
+    protected static final String ROOT_ZNODE_NAME = "zkstorageimpl.rootznodename";
+    protected static final String ROOT_ZNODE_NAME_DEFAULT = "ZKRMStateRoot";
+    
+    protected static final String NUM_RETRIES = "zkstorageimpl.numretries";
+    protected static final String NUM_RETRIES_DEFAULT = "3";
+    
+    private static int _numRetries;
+    
+    private String _zkHostPort;
+    private String _zkNodeWorkingPath;
+    private int _zkSessionTimeout;
+    private String _zkAclconf;
+    private String _rootZnodeName;
     
     private ZooKeeper _zkClient;
     private ZooKeeper _oldZkClient;
@@ -47,13 +66,6 @@ public class ZKStorageImpl extends Storage{
     private byte[] _rndAppByte;
     private long _appId;
    
-    /*
-    public ZKStorageImpl(int id){
-        _sharedData = BenchmarkUtils.sharedData;
-        _id = id;
-    }
-    //*/
-
     @Override
     public void write() {
         ThroughputMetricImpl throughputMetric = null;
@@ -97,11 +109,35 @@ public class ZKStorageImpl extends Storage{
         Random rnd = new Random(System.currentTimeMillis());
         rnd.nextBytes(_rndAppByte);
         
-        _zkNodeWorkingPath = "";
-        _zkHostPort = "localhost:2184";
-        _zkSessionTimeout = 60000;
-        _zkAclconf = "world:anyone:rwcda";
+        InputStream inStream = ClassLoader.getSystemResourceAsStream(
+                "zkndb/storage/zkndb-zkstorageimpl.properties");
         
+        Properties props = new Properties();
+        try {
+            props.load(inStream);
+            
+            _zkHostPort = props.getProperty(ZKStorageImpl.ZK_HOST_PORT, 
+                    ZKStorageImpl.ZK_HOST_PORT_DEFAULT);
+            _zkNodeWorkingPath = props.getProperty(ZKStorageImpl.ZK_NODE_WORKING_PATH, 
+                    ZKStorageImpl.ZK_NODE_WORKING_PATH_DEFAULT);
+            _zkSessionTimeout = Integer.parseInt(props.getProperty(
+                    ZKStorageImpl.ZK_SESSION_TIMEOUT, ZKStorageImpl.ZK_SESSION_TIMEOUT_DEFAULT));
+            _zkAclconf = props.getProperty(ZKStorageImpl.ZK_ACL_CONF, 
+                    ZKStorageImpl.ZK_ACL_CONF_DEFAULT);
+            _rootZnodeName = props.getProperty(ZKStorageImpl.ROOT_ZNODE_NAME, 
+                    ZKStorageImpl.ROOT_ZNODE_NAME_DEFAULT);
+            _numRetries = Integer.parseInt(props.getProperty(ZKStorageImpl.NUM_RETRIES, 
+                    ZKStorageImpl.NUM_RETRIES_DEFAULT));
+            
+        } catch (IOException ex) {
+            //use default properties set at the beginning
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                    null, ex);
+            System.out.println("Program can't continue because initialization "
+                    + "from properties file fails :(");
+            return;
+        }
+
         List<ACL> zkConfAcls = null;
         try {
             _zkAclconf = ZKUtil.resolveConfIndirection(_zkAclconf);
@@ -118,7 +154,7 @@ public class ZKStorageImpl extends Storage{
         }
         
         _zkAcl = zkConfAcls;
-        _zkRootNodePath = _zkNodeWorkingPath + "/" + ROOT_ZNODE_NAME;
+        _zkRootNodePath = _zkNodeWorkingPath + "/" + _rootZnodeName;
         
         try {
             createConnection();
@@ -130,7 +166,16 @@ public class ZKStorageImpl extends Storage{
             Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-
+        try {
+            createWithRetries(_zkRootNodePath, null, _zkAcl, CreateMode.PERSISTENT);
+        } catch (KeeperException ke) {
+            if (ke.code() != KeeperException.Code.NODEEXISTS) {
+                //alternative is to throw the exception
+                Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ke);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private void storeApplicationState() throws Exception
@@ -146,11 +191,7 @@ public class ZKStorageImpl extends Storage{
             byte[] appStateData) throws Exception
     {
         String nodeCreatePath = getNodePath(appId);
-        
-        Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.INFO, 
-                "Storing info for app: {0} at: {1}", 
-                new Object[]{appId, nodeCreatePath});
-        
+              
         try {
             // currently throw all exceptions. May need to respond differently for HA 
             // based on whether we have lost the right to write to ZK
@@ -160,7 +201,7 @@ public class ZKStorageImpl extends Storage{
             Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE,
                     "Error storing info for app: {0}. Error: {1}",
                     new Object[]{appId, e.toString()});
-            
+
             throw e;
         }
     }
@@ -289,7 +330,7 @@ public class ZKStorageImpl extends Storage{
     }
     
     private String createWithRetries(final String path, final byte[] data, 
-            final List<ACL> acl, final CreateMode mode) throws Exception
+            final List<ACL> acl, final CreateMode mode) throws KeeperException, Exception
     {
         return zkDoWithRetries(new ZKAction<String>(){
             @Override
@@ -329,7 +370,7 @@ public class ZKStorageImpl extends Storage{
             try {
                 return action.runWithCheck();
             } catch (KeeperException ke) {
-                if (shouldRetry(ke.code()) && ++retry < NUM_RETRIES) {
+                if (shouldRetry(ke.code()) && ++retry < _numRetries) {
                     continue;
                 }
                 throw ke;
