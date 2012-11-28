@@ -1,5 +1,7 @@
 package zkndb.storage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -25,7 +27,7 @@ import zkndb.utils.ZKUtil;
 
 /**
  *
- * @author 4knahs
+ * @author 4knahs, arinto
  */
 public class ZKStorageImpl extends Storage{
     
@@ -33,10 +35,12 @@ public class ZKStorageImpl extends Storage{
     protected static final String ZK_HOST_PORT = "zkstorageimpl.zkhostport";
     protected static final String ZK_HOST_PORT_DEFAULT = "localhost:2184";
     
-    protected static final String ZK_NODE_WORKING_PATH = "zkstorageimpl.zknodeworkingpath";
+    protected static final String ZK_NODE_WORKING_PATH = 
+            "zkstorageimpl.zknodeworkingpath";
     protected static final String ZK_NODE_WORKING_PATH_DEFAULT = "";
     
-    protected static final String ZK_SESSION_TIMEOUT ="zkstorageimpl.sessiontimeout";
+    protected static final String ZK_SESSION_TIMEOUT =
+            "zkstorageimpl.sessiontimeout";
     protected static final String ZK_SESSION_TIMEOUT_DEFAULT = "60000";
     
     protected static final String ZK_ACL_CONF = "zkstorageimpl.zkaclconf";
@@ -76,7 +80,8 @@ public class ZKStorageImpl extends Storage{
                 storeApplicationState();
                 throughputMetric.incrementAcks();
             } catch (Exception ex) {
-                System.out.println("Exception in when trying to store application state");
+                System.out.println("Exception in when trying to store "
+                        + "application state");
                 Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE,
                         null, ex);
             }
@@ -93,9 +98,10 @@ public class ZKStorageImpl extends Storage{
                 readApplicationState();
                 throughputMetric.incrementAcks();
             } catch (Exception ex) {
-                System.out.println("Exception in when trying to read application state");
-                Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE,
-                        null, ex);
+                System.out.println("Exception in when trying to "
+                        + "read application state");
+                Logger.getLogger(ZKStorageImpl.class.getName()).log(
+                        Level.SEVERE, null, ex);
             }
         }
     }
@@ -109,8 +115,19 @@ public class ZKStorageImpl extends Storage{
         Random rnd = new Random(System.currentTimeMillis());
         rnd.nextBytes(_rndAppByte);
         
-        InputStream inStream = ClassLoader.getSystemResourceAsStream(
+        InputStream inStream = null;
+        FileInputStream fileInStream = null;
+        
+        try {
+            //try to load properties file from same path as the executable jar 
+            fileInStream = new FileInputStream("zkndb-zkstorageimpl.properties");
+            inStream = fileInStream;
+        } catch (FileNotFoundException ex) {
+            //if the file not found, load from the default properties file 
+            //inside jar file
+            inStream = ClassLoader.getSystemResourceAsStream(
                 "zkndb/storage/zkndb-zkstorageimpl.properties");
+        }
         
         Properties props = new Properties();
         try {
@@ -118,15 +135,18 @@ public class ZKStorageImpl extends Storage{
             
             _zkHostPort = props.getProperty(ZKStorageImpl.ZK_HOST_PORT, 
                     ZKStorageImpl.ZK_HOST_PORT_DEFAULT);
-            _zkNodeWorkingPath = props.getProperty(ZKStorageImpl.ZK_NODE_WORKING_PATH, 
+            _zkNodeWorkingPath = props.getProperty(
+                    ZKStorageImpl.ZK_NODE_WORKING_PATH, 
                     ZKStorageImpl.ZK_NODE_WORKING_PATH_DEFAULT);
             _zkSessionTimeout = Integer.parseInt(props.getProperty(
-                    ZKStorageImpl.ZK_SESSION_TIMEOUT, ZKStorageImpl.ZK_SESSION_TIMEOUT_DEFAULT));
+                    ZKStorageImpl.ZK_SESSION_TIMEOUT, 
+                    ZKStorageImpl.ZK_SESSION_TIMEOUT_DEFAULT));
             _zkAclconf = props.getProperty(ZKStorageImpl.ZK_ACL_CONF, 
                     ZKStorageImpl.ZK_ACL_CONF_DEFAULT);
             _rootZnodeName = props.getProperty(ZKStorageImpl.ROOT_ZNODE_NAME, 
                     ZKStorageImpl.ROOT_ZNODE_NAME_DEFAULT);
-            _numRetries = Integer.parseInt(props.getProperty(ZKStorageImpl.NUM_RETRIES, 
+            _numRetries = Integer.parseInt(props.getProperty(
+                    ZKStorageImpl.NUM_RETRIES, 
                     ZKStorageImpl.NUM_RETRIES_DEFAULT));
             
         } catch (IOException ex) {
@@ -143,10 +163,12 @@ public class ZKStorageImpl extends Storage{
             _zkAclconf = ZKUtil.resolveConfIndirection(_zkAclconf);
              zkConfAcls = ZKUtil.parseACLs(_zkAclconf);
         } catch (IOException ex) {
-            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                    null, ex);
         } 
         catch (BadAclFormatException bex){
-            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, bex);
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                    null, bex);
         }
         
         if(zkConfAcls != null && zkConfAcls.isEmpty()){
@@ -161,9 +183,11 @@ public class ZKStorageImpl extends Storage{
             //version -1 means zkclient will match any node's versions
            // deleteWithRetries(_zkRootNodePath, 0);
         } catch (IOException ex) {
-            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                    null, ex);
         } catch (Exception ex) {
-            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                    null, ex);
         }
         
         try {
@@ -171,10 +195,12 @@ public class ZKStorageImpl extends Storage{
         } catch (KeeperException ke) {
             if (ke.code() != KeeperException.Code.NODEEXISTS) {
                 //alternative is to throw the exception
-                Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ke);
+                Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                        null, ke);
             }
         } catch (Exception ex) {
-            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
+                    null, ex);
         }
     }
     
@@ -193,8 +219,8 @@ public class ZKStorageImpl extends Storage{
         String nodeCreatePath = getNodePath(appId);
               
         try {
-            // currently throw all exceptions. May need to respond differently for HA 
-            // based on whether we have lost the right to write to ZK
+            // currently throw all exceptions. May need to respond differently 
+            // for HA based on whether we have lost the right to write to ZK
             createWithRetries(nodeCreatePath, appStateData,
                     _zkAcl, CreateMode.PERSISTENT);
         } catch (Exception e) {
@@ -215,7 +241,8 @@ public class ZKStorageImpl extends Storage{
             throws Exception {
         String nodeRemovePath = getNodePath(appId);
         Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.INFO,
-                "Removing info for app: {0} at: {1}", new Object[]{appId, nodeRemovePath});
+                "Removing info for app: {0} at: {1}", new Object[]{appId, 
+                    nodeRemovePath});
         try {
             deleteWithRetries(nodeRemovePath, 0);
         } catch (Exception e) {
@@ -256,7 +283,8 @@ public class ZKStorageImpl extends Storage{
         }
     }
     
-    private synchronized void processWatchEvent(ZooKeeper zk, WatchedEvent event)
+    private synchronized void processWatchEvent(ZooKeeper zk, WatchedEvent 
+            event)
             throws Exception {
         Watcher.Event.EventType eventType = event.getType();
         Logger.getLogger(ZKStorageImpl.class.getName()).log(
@@ -268,28 +296,35 @@ public class ZKStorageImpl extends Storage{
             // the connection state has changed
             switch (event.getState()) {
                 case SyncConnected:
-                   // LOG.info("ZKRMStateStore Session connected");
+                    Logger.getLogger(ZKStorageImpl.class.getName()).log(
+                            Level.INFO, "ZKStorageImpl Session connected");
                     if (_oldZkClient != null) {
-                        // the SyncConnected must be from the client that sent Disconnected
+                        // the SyncConnected must be from 
+                        // the client that sent Disconnected
                         assert _oldZkClient == zk;
                         _zkClient = _oldZkClient;
                         _oldZkClient = null;
-                        //LOG.info("ZKRMStateStore Session restored");
+                        Logger.getLogger(ZKStorageImpl.class.getName()).log(
+                                Level.INFO, "ZKStorageImpl Session restored");
                     }
                     break;
                 case Disconnected:
-                    //LOG.info("ZKRMStateStore Session disconnected");
+                    Logger.getLogger(ZKStorageImpl.class.getName()).log(
+                            Level.INFO, "ZKStorageImpl Session disconnected");
                     _oldZkClient = _zkClient;
                     _zkClient = null;
                     break;
                 case Expired:
                     // the connection got terminated because of session timeout
                     // call listener to reconnect
-                    //LOG.info("Session expired");
+                    Logger.getLogger(ZKStorageImpl.class.getName()).log(
+                            Level.INFO, "ZKStorageImpl Session expired");
                     createConnection();
                     break;
                 default:
-                   // LOG.error("Unexpected Zookeeper watch event state: " + event.getState());
+                    Logger.getLogger(ZKStorageImpl.class.getName()).log(
+                            Level.SEVERE, "ZKStorageImpl Unexpected Zookeeper " 
+                            + "watch event state: {0}", event.getState());
                     break;
             }
         }
@@ -330,7 +365,8 @@ public class ZKStorageImpl extends Storage{
     }
     
     private String createWithRetries(final String path, final byte[] data, 
-            final List<ACL> acl, final CreateMode mode) throws KeeperException, Exception
+            final List<ACL> acl, final CreateMode mode) 
+            throws KeeperException, Exception
     {
         return zkDoWithRetries(new ZKAction<String>(){
             @Override

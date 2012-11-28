@@ -99,10 +99,19 @@ public class NdbStorageImpl extends Storage{
         Random rnd = new Random(System.currentTimeMillis());
         rnd.nextBytes(_rndAppByte); 
         
-        //use default clusterj.properties included in the jar file
-        InputStream inStream = ClassLoader.getSystemResourceAsStream(
-                "zkndb/storage/zkndb-clusterj.properties");
-        
+        InputStream inStream = null;
+        FileInputStream fileInStream = null;
+        try {
+            //try to load properties file from same path as the executable jar 
+            fileInStream = new FileInputStream("zkndb-clusterj.properties");
+            inStream = fileInStream;
+        } catch (FileNotFoundException ex) {
+            //if the file not found, load from the default properties file 
+            //inside jar file
+            inStream = ClassLoader.getSystemResourceAsStream(
+                    "zkndb/storage/zkndb-clusterj.properties");
+        }
+           
         try {
             Properties props = new Properties();
             props.load(inStream);
