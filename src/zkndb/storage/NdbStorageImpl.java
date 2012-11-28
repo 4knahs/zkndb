@@ -45,12 +45,7 @@ public class NdbStorageImpl extends Storage{
                 storeApplicationState();
                 throughputMetric.incrementAcks();
             } catch (Exception ex) {
-                //assumptions: 
-                //1. no exception is thrown during incrementing requests and acks
-                //2. persists throws exception
-                System.out.println("Exception in when trying to store application state");
-                Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE,
-                        null, ex);
+                //consume the exception to speedup throughput
             }
         }
     }
@@ -72,12 +67,7 @@ public class NdbStorageImpl extends Storage{
                 //therefore, to handle this case we treat this as succesfully increment
                 throughputMetric.incrementAcks();
             } catch (Exception ex) {
-                //assumptions: 
-                //1. no exception is thrown during incrementing requests and acks
-                //2. persists throws exception
-                System.out.println("Exception in when trying to read application state");
-                Logger.getLogger(NdbStorageImpl.class.getName()).log(Level.SEVERE,
-                        null, ex);
+                //consume the exception to speedup throughput
             }
         }
     }

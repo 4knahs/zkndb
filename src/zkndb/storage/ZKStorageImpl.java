@@ -78,10 +78,7 @@ public class ZKStorageImpl extends Storage{
                 storeApplicationState();
                 throughputMetric.incrementAcks();
             } catch (Exception ex) {
-                System.out.println("Exception in when trying to store "
-                        + "application state");
-                Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE,
-                        null, ex);
+                //consume the exception to speedup throughput
             }
         }
     }
@@ -96,10 +93,7 @@ public class ZKStorageImpl extends Storage{
                 readApplicationState();
                 throughputMetric.incrementAcks();
             } catch (Exception ex) {
-                System.out.println("Exception in when trying to "
-                        + "read application state");
-                Logger.getLogger(ZKStorageImpl.class.getName()).log(
-                        Level.SEVERE, null, ex);
+                //consume the exception to speedup throughput
             }
         }
     }
