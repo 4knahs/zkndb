@@ -14,14 +14,12 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 import zkndb.benchmark.BenchmarkUtils;
 import zkndb.exceptions.BadAclFormatException;
-import zkndb.metrics.Metric;
 import zkndb.metrics.ThroughputMetricImpl;
 import zkndb.utils.ZKUtil;
 
