@@ -1,5 +1,6 @@
 <h3>ZKNDB framework</h3>
-zkndb is a simple storage benchmarking application.
+zkndb is a simple storage benchmarking application. So far it has implementations for HDFS, 
+Zookeeper and NDB MySQL.
 It is composed by 3 packages: benchmark, metrics and storage.
 
 <h3>Packages</h3>
