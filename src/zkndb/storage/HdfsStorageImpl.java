@@ -100,43 +100,32 @@ public class HdfsStorageImpl extends Storage {
         Metric metric = _sharedData.get(_id);
         long new_uuid = _uuid;
 
-        //synchronized (metric) {
-            ((ThroughputMetricImpl) metric).incrementRequests();
-            try {
-                //do write to datastore
-                new_uuid = UUID.randomUUID().getLeastSignificantBits();
-                Path nodeCreatePath = getNodePath(String.valueOf(new_uuid));
-
-                try {
-                    writeFile(nodeCreatePath, _block);
-                    _uuid = new_uuid;
-                } catch (Exception e) {
-                    throw e;
-                }
-
-
-                ((ThroughputMetricImpl) metric).incrementAcks();
-            } catch (Exception e) {
-                //Sent request but it could not be served.
-                //Should catch only specific exception.
-            }
-        //}
+        ((ThroughputMetricImpl) metric).incrementRequests();
+        try {
+            //do write to datastore
+            new_uuid = UUID.randomUUID().getLeastSignificantBits();
+            Path nodeCreatePath = getNodePath(String.valueOf(new_uuid));
+            writeFile(nodeCreatePath, _block);
+            _uuid = new_uuid;
+            ((ThroughputMetricImpl) metric).incrementAcks();
+        } catch (Exception e) {
+            //Sent request but it could not be served.
+            //Should catch only specific exception.
+        }
     }
 
     @Override
     public void read() {
-        //synchronized (_sharedData.get(_id)) {
-            ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
-            try {
-                //Do read to datastore
-                Path nodeCreatePath = getNodePath(String.valueOf(_uuid));
-                readFile(nodeCreatePath, _blockSize);
-                ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
-            } catch (Exception e) {
-                //Sent request but it could not be served.
-                //Should catch only specific exception.
-            }
-        //}
+        ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
+        try {
+            //Do read to datastore
+            Path nodeCreatePath = getNodePath(String.valueOf(_uuid));
+            readFile(nodeCreatePath, _blockSize);
+            ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
+        } catch (Exception e) {
+            //Sent request but it could not be served.
+            //Should catch only specific exception.
+        }
     }
 
     private void deleteFile(Path deletePath) throws Exception {

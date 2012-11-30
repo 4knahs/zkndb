@@ -28,34 +28,30 @@ public class DummyStorageImpl extends Storage {
     public void write() {
         //TODO : performs a random write to storage
         Metric metric = _sharedData.get(_id);
-        //synchronized (metric) {
-            ((ThroughputMetricImpl) metric).incrementRequests();
-            try {
-                //Do write to datastore
-                //System.out.println("Storage " + _id + " random write.");
-                ((ThroughputMetricImpl) metric).incrementAcks();
-            } catch (Exception e) {
-                //Sent request but it could not be served.
-                //Should catch only specific exception.
-            }
-        //}
+        ((ThroughputMetricImpl) metric).incrementRequests();
+        try {
+            //Do write to datastore
+            //System.out.println("Storage " + _id + " random write.");
+            ((ThroughputMetricImpl) metric).incrementAcks();
+        } catch (Exception e) {
+            //Sent request but it could not be served.
+            //Should catch only specific exception.
+        }
     }
 
     @Override
     public void read() {
         //TODO : performs a read to storage
-        
-        //synchronized (_sharedData.get(_id)) {
-            ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
-            try {
-                //Do read to datastore
-                //System.out.println("Storage " + _id + " random read.");
-                ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
-            } catch (Exception e) {
-                //Sent request but it could not be served.
-                //Should catch only specific exception.
-            }
-        //}
+
+        ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
+        try {
+            //Do read to datastore
+            //System.out.println("Storage " + _id + " random read.");
+            ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
+        } catch (Exception e) {
+            //Sent request but it could not be served.
+            //Should catch only specific exception.
+        }
     }
     
 }

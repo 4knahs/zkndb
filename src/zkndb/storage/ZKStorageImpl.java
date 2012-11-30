@@ -72,7 +72,6 @@ public class ZKStorageImpl extends Storage{
     public void write() {
         ThroughputMetricImpl throughputMetric = null;
         throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
-        //synchronized (throughputMetric) {
             try {
                 throughputMetric.incrementRequests();
                 storeApplicationState();
@@ -80,22 +79,19 @@ public class ZKStorageImpl extends Storage{
             } catch (Exception ex) {
                 //consume the exception to speedup throughput
             }
-        //}
     }
 
     @Override
     public void read() {
         ThroughputMetricImpl throughputMetric = null;
         throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
-        //synchronized(throughputMetric){
-            try {
-                throughputMetric.incrementRequests();
-                readApplicationState();
-                throughputMetric.incrementAcks();
-            } catch (Exception ex) {
-                //consume the exception to speedup throughput
-            }
-        //}
+        try {
+            throughputMetric.incrementRequests();
+            readApplicationState();
+            throughputMetric.incrementAcks();
+        } catch (Exception ex) {
+            //consume the exception to speedup throughput
+        }
     }
 
     @Override

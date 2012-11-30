@@ -54,22 +54,20 @@ public class NdbStorageImpl extends Storage{
     public void read() {
         ThroughputMetricImpl throughputMetric = null;
         throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
-        //synchronized (throughputMetric) {
-            try {
-                throughputMetric.incrementRequests();
-                readApplicationState();
-                throughputMetric.incrementAcks();
+        try {
+            throughputMetric.incrementRequests();
+            readApplicationState();
+            throughputMetric.incrementAcks();
 
-            } catch (InvalidDbEntryException ex) {
-                //theoretically this case will never happen
-                //because we already ensure that new _appIds is stored when 
-                //we sucessfully persist the data
-                //therefore, to handle this case we treat this as succesfully increment
-                throughputMetric.incrementAcks();
-            } catch (Exception ex) {
-                //consume the exception to speedup throughput
-            }
-        //}
+        } catch (InvalidDbEntryException ex) {
+            //theoretically this case will never happen
+            //because we already ensure that new _appIds is stored when 
+            //we sucessfully persist the data
+            //therefore, to handle this case we treat this as succesfully increment
+            throughputMetric.incrementAcks();
+        } catch (Exception ex) {
+            //consume the exception to speedup throughput
+        }
     }
 
     @Override

@@ -33,18 +33,15 @@ public class ThroughputEngineImpl extends MetricsEngine {
 
         //Log requests/acks per second and reset
         for (Metric m : _sharedData) {
-            //synchronized (m) { //each storage thread should lock its own object
 //                System.out.println("Throughput = "
 //                        + ((ThroughputMetricImpl) m).getRequests() + " Acks = "
 //                        + ((ThroughputMetricImpl) m).getAcks());
 
             totalRequests += ((ThroughputMetricImpl) m).getRequests();
             totalAcks += ((ThroughputMetricImpl) m).getAcks();
-            //m.reset();
-            //}
         }
 
-        //printTime();
+        //possible improvement: printTime();
         System.out.println("TotalRequests = " + (totalRequests - previousRequests)
                 + " TotalAcks = " + (totalAcks - previousAcks));
 
