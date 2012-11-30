@@ -29,21 +29,24 @@ public class HdfsStorageImpl extends Storage {
     private Path fsRootDirPath;
     private static final String ROOT_DIR_NAME = "/yarn";
     private long uuid;
-    private int block_size = 53;
-    private byte[] block = new byte[block_size];
+    private int blockSize = 53;
+    private byte[] block = new byte[blockSize];
+    private boolean useHDFS = false;
 
     @Override
     public void init() {
         _sharedData = BenchmarkUtils.sharedData;
         _requestRate = BenchmarkUtils.requestRate;
-        //TODO : establishes connection to storage
+
         System.out.println("Storage " + _id + " establishing connection");
 
         Configuration conf = new YarnConfiguration();
-        conf.set(YarnConfiguration.FS_RM_STATE_STORE_URI, "hdfs://cloud7.sics.se:54310/");
 
-        fsWorkingPath = new Path("hdfs://cloud7.sics.se:54310/");
+        conf.set(YarnConfiguration.FS_RM_STATE_STORE_URI, "hdfs://localhost:9000/");
+        
+        fsWorkingPath = new Path("hdfs://localhost:9000/");
         fsRootDirPath = new Path(fsWorkingPath, ROOT_DIR_NAME);
+        
         try {
             // create filesystem
             fs = fsWorkingPath.getFileSystem(conf);
@@ -56,7 +59,6 @@ public class HdfsStorageImpl extends Storage {
 
     @Override
     public void write() {
-        //TODO : performs a random write to storage
         Metric metric = _sharedData.get(_id);
         long new_uuid = uuid;
         
@@ -71,7 +73,6 @@ public class HdfsStorageImpl extends Storage {
                     // currently throw all exceptions. May need to respond differently for HA
                     // based on whether we have lost the right to write to FS
                     writeFile(nodeCreatePath, block);
-                    System.out.println("Storage " + _id + " random write.");
                     uuid = new_uuid;
                 } catch (Exception e) {
                     throw e;
@@ -88,15 +89,13 @@ public class HdfsStorageImpl extends Storage {
 
     @Override
     public void read() {
-        //TODO : performs a read to storage
-
         synchronized (_sharedData.get(_id)) {
             ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
             try {
                 //Do read to datastore
                 Path nodeCreatePath = getNodePath(String.valueOf(uuid));
-                readFile(nodeCreatePath, block_size);
-                System.out.println("Storage " + _id + " random read.");
+                readFile(nodeCreatePath, blockSize);
+                //System.out.println("Storage " + _id + " random read.");
                 ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
             } catch (Exception e) {
                 //Sent request but it could not be served.
