@@ -4,7 +4,11 @@
  */
 package zkndb.storage;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,14 +28,19 @@ import zkndb.metrics.ThroughputMetricImpl;
  */
 public class HdfsStorageImpl extends Storage {
 
+    private static final String HDFS_URI = "hdfsstorageimpl.hdfsuri";
+    private static final String HDFS_URI_DEFAULT = "hdfs://localhost:9000/";
+    private static final String HDFS_ROOT_DIR_NAME = "hdfsstorageimpl.rootdirname";
+    private static final String HDFS_ROOT_DIR_DEFAULT = "zkndb";
+   
+    private String _hdfsUri;
+    private String _rootDirName;
     private FileSystem fs = null;
-    private Path fsWorkingPath;
-    private Path fsRootDirPath;
-    private static final String ROOT_DIR_NAME = "/yarn";
-    private long uuid;
-    private int blockSize = 53;
-    private byte[] block = new byte[blockSize];
-    private boolean useHDFS = false;
+    private Path _fsWorkingPath;
+    private Path _fsRootDirPath;
+    private long _uuid;
+    private int _blockSize = 53;
+    private byte[] _block = new byte[_blockSize];
 
     @Override
     public void init() {
@@ -40,17 +49,46 @@ public class HdfsStorageImpl extends Storage {
 
         System.out.println("Storage " + _id + " establishing connection");
 
-        Configuration conf = new YarnConfiguration();
+        InputStream inStream = null;
+        FileInputStream fileInStream = null;
 
-        conf.set(YarnConfiguration.FS_RM_STATE_STORE_URI, "hdfs://localhost:9000/");
-        
-        fsWorkingPath = new Path("hdfs://localhost:9000/");
-        fsRootDirPath = new Path(fsWorkingPath, ROOT_DIR_NAME);
+        try {
+            fileInStream = new FileInputStream("zkndb-hdfsstorageimpl.properties");
+            inStream = fileInStream;
+        } catch (FileNotFoundException ex) {
+            //if the file not found, load from the default properties file 
+            //inside jar file
+            inStream = ClassLoader.getSystemResourceAsStream(
+                    "zkndb/storage/zkndb-hdfsstorageimpl.properties");
+        }
+
+        Properties props = new Properties();
+
+        try {
+            props.load(inStream);
+
+            _hdfsUri = props.getProperty(HdfsStorageImpl.HDFS_URI, 
+                    HdfsStorageImpl.HDFS_URI_DEFAULT);
+            _rootDirName = props.getProperty(HdfsStorageImpl.HDFS_ROOT_DIR_NAME, 
+                    HdfsStorageImpl.HDFS_ROOT_DIR_DEFAULT);
+
+        } catch (IOException ex) {
+            Logger.getLogger(HdfsStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Program can't continue because initialization "
+                    + "from properties file fails :(");
+            return;
+        }
+
+        Configuration conf = new YarnConfiguration();
+        conf.set(YarnConfiguration.FS_RM_STATE_STORE_URI, _hdfsUri);
+
+        _fsWorkingPath = new Path(_hdfsUri);
+        _fsRootDirPath = new Path(_fsWorkingPath, _rootDirName);
         
         try {
             // create filesystem
-            fs = fsWorkingPath.getFileSystem(conf);
-            fs.mkdirs(fsRootDirPath);
+            fs = _fsWorkingPath.getFileSystem(conf);
+            fs.mkdirs(_fsRootDirPath);
         } catch (IOException ex) {
             Logger.getLogger(HdfsStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -60,25 +98,23 @@ public class HdfsStorageImpl extends Storage {
     @Override
     public void write() {
         Metric metric = _sharedData.get(_id);
-        long new_uuid = uuid;
-        
+        long new_uuid = _uuid;
+
         synchronized (metric) {
             ((ThroughputMetricImpl) metric).incrementRequests();
             try {
-                //Do write to datastore
+                //do write to datastore
                 new_uuid = UUID.randomUUID().getLeastSignificantBits();
                 Path nodeCreatePath = getNodePath(String.valueOf(new_uuid));
-                
+
                 try {
-                    // currently throw all exceptions. May need to respond differently for HA
-                    // based on whether we have lost the right to write to FS
-                    writeFile(nodeCreatePath, block);
-                    uuid = new_uuid;
+                    writeFile(nodeCreatePath, _block);
+                    _uuid = new_uuid;
                 } catch (Exception e) {
                     throw e;
                 }
 
-                
+
                 ((ThroughputMetricImpl) metric).incrementAcks();
             } catch (Exception e) {
                 //Sent request but it could not be served.
@@ -93,9 +129,8 @@ public class HdfsStorageImpl extends Storage {
             ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
             try {
                 //Do read to datastore
-                Path nodeCreatePath = getNodePath(String.valueOf(uuid));
-                readFile(nodeCreatePath, blockSize);
-                //System.out.println("Storage " + _id + " random read.");
+                Path nodeCreatePath = getNodePath(String.valueOf(_uuid));
+                readFile(nodeCreatePath, _blockSize);
                 ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
             } catch (Exception e) {
                 //Sent request but it could not be served.
@@ -126,6 +161,6 @@ public class HdfsStorageImpl extends Storage {
     }
 
     private Path getNodePath(String nodeName) {
-        return new Path(fsRootDirPath, nodeName);
+        return new Path(_fsRootDirPath, nodeName);
     }
 }

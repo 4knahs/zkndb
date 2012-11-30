@@ -142,7 +142,6 @@ public class ZKStorageImpl extends Storage{
                     ZKStorageImpl.NUM_RETRIES_DEFAULT));
             
         } catch (IOException ex) {
-            //use default properties set at the beginning
             Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.SEVERE, 
                     null, ex);
             System.out.println("Program can't continue because initialization "
