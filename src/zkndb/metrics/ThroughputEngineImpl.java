@@ -10,12 +10,15 @@ import zkndb.benchmark.BenchmarkUtils;
  */
 public class ThroughputEngineImpl extends MetricsEngine {
 
+    long previousRequests = 0;
+    long previousAcks = 0;
+
     @Override
     public void init() {
 
         _sharedData = BenchmarkUtils.sharedData;
         _period = BenchmarkUtils.metricPeriod;
-        
+
         for (Metric m : _sharedData) {
             synchronized (m) { //each storage thread should lock its own object
                 m.reset();
@@ -30,23 +33,28 @@ public class ThroughputEngineImpl extends MetricsEngine {
 
         //Log requests/acks per second and reset
         for (Metric m : _sharedData) {
-            synchronized (m) { //each storage thread should lock its own object
+            //synchronized (m) { //each storage thread should lock its own object
 //                System.out.println("Throughput = "
 //                        + ((ThroughputMetricImpl) m).getRequests() + " Acks = "
 //                        + ((ThroughputMetricImpl) m).getAcks());
 
-                totalRequests += ((ThroughputMetricImpl) m).getRequests();
-                totalAcks += ((ThroughputMetricImpl) m).getAcks();
-                m.reset();
-            }
+            totalRequests += ((ThroughputMetricImpl) m).getRequests();
+            totalAcks += ((ThroughputMetricImpl) m).getAcks();
+            //m.reset();
+            //}
         }
+
         //printTime();
-        System.out.println("TotalRequests = " + totalRequests + " TotalAcks = " + totalAcks);
+        System.out.println("TotalRequests = " + (totalRequests - previousRequests)
+                + " TotalAcks = " + (totalAcks - previousAcks));
+
+        previousAcks = totalAcks;
+        previousRequests = totalRequests;
     }
 
     @Override
     public void run() {
-        while(_running){
+        while (_running) {
             update();
             try {
                 Thread.sleep(BenchmarkUtils.metricPeriod);

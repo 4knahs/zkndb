@@ -78,7 +78,7 @@ public abstract class BenchmarkUtils {
                 stor.setId(i);
                 storages.add(stor);
             }
-
+            
             //Run storages
             for (Storage storage : storages) {
                 Thread storeThread = new Thread(storage);
