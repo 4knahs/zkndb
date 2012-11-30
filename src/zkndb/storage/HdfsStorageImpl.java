@@ -100,7 +100,7 @@ public class HdfsStorageImpl extends Storage {
         Metric metric = _sharedData.get(_id);
         long new_uuid = _uuid;
 
-        synchronized (metric) {
+        //synchronized (metric) {
             ((ThroughputMetricImpl) metric).incrementRequests();
             try {
                 //do write to datastore
@@ -120,12 +120,12 @@ public class HdfsStorageImpl extends Storage {
                 //Sent request but it could not be served.
                 //Should catch only specific exception.
             }
-        }
+        //}
     }
 
     @Override
     public void read() {
-        synchronized (_sharedData.get(_id)) {
+        //synchronized (_sharedData.get(_id)) {
             ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
             try {
                 //Do read to datastore
@@ -136,7 +136,7 @@ public class HdfsStorageImpl extends Storage {
                 //Sent request but it could not be served.
                 //Should catch only specific exception.
             }
-        }
+        //}
     }
 
     private void deleteFile(Path deletePath) throws Exception {

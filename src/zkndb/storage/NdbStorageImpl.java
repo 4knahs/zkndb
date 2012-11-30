@@ -38,7 +38,7 @@ public class NdbStorageImpl extends Storage{
         ThroughputMetricImpl throughputMetric = null;
 
         throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
-        synchronized (throughputMetric) {
+        //synchronized (throughputMetric) {
             try {
 
                 throughputMetric.incrementRequests();
@@ -47,14 +47,14 @@ public class NdbStorageImpl extends Storage{
             } catch (Exception ex) {
                 //consume the exception to speedup throughput
             }
-        }
+        //}
     }
 
     @Override
     public void read() {
         ThroughputMetricImpl throughputMetric = null;
         throughputMetric = (ThroughputMetricImpl) _sharedData.get(_id);
-        synchronized (throughputMetric) {
+        //synchronized (throughputMetric) {
             try {
                 throughputMetric.incrementRequests();
                 readApplicationState();
@@ -69,7 +69,7 @@ public class NdbStorageImpl extends Storage{
             } catch (Exception ex) {
                 //consume the exception to speedup throughput
             }
-        }
+        //}
     }
 
     @Override
