@@ -2,3 +2,5 @@
 /build/
 /dist/
 nbproject/genfiles.properties
+nbproject/private/config.properties
+nbproject/project.properties
