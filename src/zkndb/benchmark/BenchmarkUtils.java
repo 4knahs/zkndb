@@ -28,15 +28,19 @@ public abstract class BenchmarkUtils {
     protected static Class<?> metricClass = null;
     protected static Class<?> engineClass = null;
     protected static Thread metricsThread;
+    public static String storageType = null;
 
     public static void setStorage(String storage) {
         storageClass = null;
+       
         try {
             storageClass = Class.forName("zkndb.storage." + storage);
         } catch (ClassNotFoundException e) {
             System.err.println("Storage : Class not found!");
             System.exit(1);
         }
+        
+         storageType = storage.replace("StorageImpl", "");
     }
 
     public static void setMetric(String metric) {
@@ -74,8 +78,8 @@ public abstract class BenchmarkUtils {
             //Create storages
             for (int i = 0; i < nStorageThreads; i++) {
                 Storage stor = (Storage) storageClass.newInstance();
-                stor.init();
                 stor.setId(i);
+                stor.init();
                 storages.add(stor);
             }
             
@@ -103,6 +107,8 @@ public abstract class BenchmarkUtils {
                 storage.stop();
             }
             
+            System.out.println("Done! Check results in " + getFilename());
+            
         } catch (IllegalAccessException e) {
             System.err.println("Class not accessible!");
             System.exit(1);
@@ -110,6 +116,10 @@ public abstract class BenchmarkUtils {
             System.err.println("Class not instantiable!");
             System.exit(1);
         }
+    }
+    
+    public static String getFilename(){
+        return BenchmarkUtils.storageType + BenchmarkUtils.nWrites + BenchmarkUtils.nReads + ".csv";
     }
 
     public static void readInput(String[] args) {

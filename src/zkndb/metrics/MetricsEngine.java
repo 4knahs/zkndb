@@ -17,7 +17,7 @@ public abstract class MetricsEngine implements Runnable{
     protected SimpleDateFormat ftcomplete = 
        new SimpleDateFormat ("yyyy.MM.dd 'at' hh:mm:ss a");
     protected SimpleDateFormat ft = 
-       new SimpleDateFormat ("hh:mm:ss ");
+       new SimpleDateFormat ("hh_mm_ss");
 
     //initializes logs and metric variables
     public abstract void init();
@@ -37,5 +37,10 @@ public abstract class MetricsEngine implements Runnable{
     public void printTime(){
         Date dnow = new Date();
         System.out.print(ft.format(dnow));
+    }
+    
+    public String getTime(){
+        Date dnow = new Date();
+        return ft.format(dnow);
     }
 }

@@ -90,7 +90,7 @@ public class HdfsStorageImpl extends Storage {
             fs = _fsWorkingPath.getFileSystem(conf);
             fs.mkdirs(_fsRootDirPath);
         } catch (IOException ex) {
-            Logger.getLogger(HdfsStorageImpl.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("IO Exception: " + ex.getLocalizedMessage());
         }
 
     }
@@ -119,6 +119,7 @@ public class HdfsStorageImpl extends Storage {
             } catch (Exception e) {
                 //Sent request but it could not be served.
                 //Should catch only specific exception.
+                System.err.println("IO Exception: " + e.getLocalizedMessage());
             }
         //}
     }
