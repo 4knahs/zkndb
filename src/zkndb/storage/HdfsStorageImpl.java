@@ -38,7 +38,6 @@ public class HdfsStorageImpl extends Storage {
     private FileSystem fs = null;
     private Path _fsWorkingPath;
     private Path _fsRootDirPath;
-    private long _uuid;
     private int _blockSize = 53;
     private byte[] _block = new byte[_blockSize];
 
@@ -98,7 +97,7 @@ public class HdfsStorageImpl extends Storage {
     @Override
     public void write() {
         Metric metric = _sharedData.get(_id);
-        long new_uuid = _uuid;
+        long new_uuid = _appId;
 
         //synchronized (metric) {
             ((ThroughputMetricImpl) metric).incrementRequests();
@@ -109,7 +108,7 @@ public class HdfsStorageImpl extends Storage {
 
                 try {
                     writeFile(nodeCreatePath, _block);
-                    _uuid = new_uuid;
+                    _appId = new_uuid;
                 } catch (Exception e) {
                     throw e;
                 }
@@ -129,7 +128,7 @@ public class HdfsStorageImpl extends Storage {
         ((ThroughputMetricImpl) _sharedData.get(_id)).incrementRequests();
         try {
             //Do read to datastore
-            Path nodeCreatePath = getNodePath(String.valueOf(_uuid));
+            Path nodeCreatePath = getNodePath(String.valueOf(_appId));
             readFile(nodeCreatePath, _blockSize);
             ((ThroughputMetricImpl) _sharedData.get(_id)).incrementAcks();
         } catch (Exception e) {
