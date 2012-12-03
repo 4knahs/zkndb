@@ -66,7 +66,6 @@ public class ZKStorageImpl extends Storage{
     
     private int _randomByteSize;
     private byte[] _rndAppByte;
-    private long _appId;
    
     @Override
     public void write() {
@@ -200,7 +199,7 @@ public class ZKStorageImpl extends Storage{
         _appId = appId;
     }
     
-    private synchronized void storeApplicationState(String appId, 
+    private void storeApplicationState(String appId, 
             byte[] appStateData) throws Exception
     {
         String nodeCreatePath = getNodePath(appId);
@@ -224,7 +223,7 @@ public class ZKStorageImpl extends Storage{
         loadApplicationState(String.valueOf(_appId));
     }
     
-    private synchronized void removeApplicationState(String appId)
+    private void removeApplicationState(String appId)
             throws Exception {
         String nodeRemovePath = getNodePath(appId);
         Logger.getLogger(ZKStorageImpl.class.getName()).log(Level.INFO,
@@ -239,7 +238,7 @@ public class ZKStorageImpl extends Storage{
         }
     }
     
-    private synchronized void loadApplicationState(String appId) 
+    private void loadApplicationState(String appId) 
             throws Exception
     {
         String loadedNodePath = getNodePath(appId);
@@ -270,7 +269,7 @@ public class ZKStorageImpl extends Storage{
         }
     }
     
-    private synchronized void processWatchEvent(ZooKeeper zk, WatchedEvent 
+    private void processWatchEvent(ZooKeeper zk, WatchedEvent 
             event)
             throws Exception {
         Watcher.Event.EventType eventType = event.getType();
@@ -341,7 +340,7 @@ public class ZKStorageImpl extends Storage{
         _zkClient = getNewZooKeeper();
     }
     
-    private synchronized ZooKeeper getNewZooKeeper() throws Exception {
+    private ZooKeeper getNewZooKeeper() throws Exception {
         ZooKeeper zk = new ZooKeeper(_zkHostPort, _zkSessionTimeout, null);
         zk.register(new ForwardingWatcher(zk));
         return zk;

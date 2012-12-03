@@ -56,26 +56,27 @@ public static void main(String[] args){
   
 <h3>Synchronization</h3>  
 <pre>
-Synchronization is based on fine-grained locks since it is done at the Metric level. 
+<del>Synchronization is based on fine-grained locks since it is done at the Metric level. 
   The benchmark has a list of Metrics, there is a separate metric for each Storage thread. 
   MetricsEngine accesses this list within specific periods of time (argv[1]).
   For now the only reason for the synchronization is because the MetricsEngine resets the metrics after
-  logging so they do not overload.
+  logging so they do not overload. </del> There is no locking, the MetricsEngine performs only reads,
+  this means that for now, the lenght of requests is limited by 32 bytes (long).
 </pre>
 
 <h3>Possible future work</h3>
 <pre>
-  In order to implement this without intermediate locking, instead of the MetricsEngine,
+  <del>In order to implement this without intermediate locking, instead of the MetricsEngine,
   the StorageImpl should periodically store the metrics themselves.
   This way the MetricEngine would only need to aggregate the results in the end of the execution.
-  The threads could be reasonaby synchronized in terms of time periods.
+  The threads could be reasonaby synchronized in terms of time periods.</del> Under development.
 </pre>
 
 <h3>Current issues</h3>
 <pre>
-  MetricsEngine does not perform a lock on the whole list of metrics. This means that it has to acquire
+  <del>MetricsEngine does not perform a lock on the whole list of metrics. This means that it has to acquire
   a lock for each of its elements separately. This introduces a delay in between the metrics periods
   and might potentially misplace them relative to each others. This delay might correspond
   to the time it takes to perform a single read or write and so it is dependent on the size of the data being
-  R/W.
+  R/W.</del> No locking.
 </pre>

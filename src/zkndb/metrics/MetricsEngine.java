@@ -31,12 +31,12 @@ public abstract class MetricsEngine implements Runnable{
     
     public void printCompleteTime(){
         Date dnow = new Date();
-        System.out.print(ftcomplete.format(dnow));
+        System.out.println(ftcomplete.format(dnow));
     }
     
     public void printTime(){
         Date dnow = new Date();
-        System.out.print(ft.format(dnow));
+        System.out.println(ft.format(dnow));
     }
     
     public String getTime(){

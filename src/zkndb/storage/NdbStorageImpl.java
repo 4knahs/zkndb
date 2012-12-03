@@ -31,7 +31,6 @@ public class NdbStorageImpl extends Storage{
     private int _randomByteSize;
 
     private byte[] _rndAppByte;
-    private long _appId;
     
     @Override
     public void write() {

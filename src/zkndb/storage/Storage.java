@@ -15,7 +15,7 @@ public abstract class Storage implements Runnable{
     protected int _id;
     protected Boolean _running = true;
     protected int _requestRate = 100;
-    
+    protected long _appId = 0;
     
     //establishes connection to storage
     public abstract void init();
@@ -36,6 +36,13 @@ public abstract class Storage implements Runnable{
     
     @Override
     public void run() {
+        if(BenchmarkUtils.nWrites == 0)
+        {
+            //when we are performing read intensive workload
+            //we write one value, and always read it throughout
+            //the benchmark process
+            write();
+        }
         while (_running) {
             for(int i=0; i < BenchmarkUtils.nWrites; i++){
                 write();
