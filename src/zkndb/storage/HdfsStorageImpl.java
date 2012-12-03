@@ -149,6 +149,7 @@ public class HdfsStorageImpl extends Storage {
         // state data will not be that "long"
         byte[] data = new byte[(int) len];
         fsIn.readFully(data);
+        fsIn.close();
         return data;
     }
 
