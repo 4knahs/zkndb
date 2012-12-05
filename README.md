@@ -34,7 +34,16 @@ storage package:
 <h3>Application Example</h3>
 In the following example one can implement both the metrics and storage system independently.
 <pre>
-/*Main of DummyBenchmarkImpl.java*/
+/*Main of DummyBenchmarkImpl.java 
+ *  A BenchmarkImpl should receive the following arguments:
+ *    argv[0] : Number of StorageImpl threads to run
+ *    argv[1] : Period in between metric logging (ms)
+ *    argv[2] : Execution time (ms)
+ *    argv[3] : Time per cycle (ms)
+ *  Optional arguments:
+ *    argv[4] : Number of writes per cycle
+ *    argv[5] : Number of reads per cycle
+*/
 public static void main(String[] args){
         
         /*Reads the inputs*/
